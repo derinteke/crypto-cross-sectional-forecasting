@@ -141,6 +141,31 @@ def deflated_sharpe_ratio(
     }
 
 
+def market_regression(returns: pd.Series, market: pd.Series, lags: int = 5) -> dict:
+    """Regress a strategy on the market: how much is beta, how much is alpha?
+
+    EN: A dollar-neutral book is not beta-neutral. If it is long BTC and short
+        meme coins, it quietly bets on altcoins falling, and in 2022-26 they
+        did. The intercept (with Newey-West errors) is the part of the return
+        the market does not explain.
+    TR: Dollar-neutral bir portföy beta-neutral değildir. BTC'yi long, meme
+        coinleri short ediyorsa, sessizce altcoinlerin düşeceğine bahse giriyor
+        demektir ve 2022-26'da düştüler. Kesim terimi (Newey-West hatalarıyla),
+        getirinin piyasanın açıklamadığı kısmı.
+    """
+    import statsmodels.api as sm
+
+    df = pd.DataFrame({"r": returns, "m": market}).dropna()
+    fit = sm.OLS(df["r"], sm.add_constant(df["m"])).fit(
+        cov_type="HAC", cov_kwds={"maxlags": lags}
+    )
+    return {
+        "beta_to_market": float(fit.params["m"]),
+        "alpha_bps_per_day": float(fit.params["const"] * 1e4),
+        "alpha_tstat": float(fit.tvalues["const"]),
+    }
+
+
 # --------------------------------------------------------------------------- #
 # Probabilistic / Olasılıksal
 # --------------------------------------------------------------------------- #

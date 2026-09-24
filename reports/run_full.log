@@ -1,0 +1,625 @@
+==============================================================================
+DEVICE / CİHAZ
+==============================================================================
+torch             : 2.7.1+cu126
+device            : cuda
+gpu               : NVIDIA GeForce GTX 1050 Ti
+compute capability: sm_61
+vram              : 4.0 GB
+built for archs   : ['sm_50', 'sm_60', 'sm_61', 'sm_70', 'sm_75', 'sm_80', 'sm_86', 'sm_90']
+
+==============================================================================
+DATA / VERİ
+==============================================================================
+hourly panel : 67,200 hours x 257 symbols
+samples      : 77,765 (day, coin) rows over 2,610 days | coins per day median 30, min 21
+built in 19.7s
+
+fold  1: train 2019-03-01..2021-09-27 | val 2021-09-30..2021-12-29 | test 2022-01-01..2022-06-30
+fold  2: train 2019-03-01..2022-03-26 | val 2022-03-29..2022-06-28 | test 2022-07-01..2022-12-31
+fold  3: train 2019-03-01..2022-09-27 | val 2022-09-30..2022-12-29 | test 2023-01-01..2023-06-30
+fold  4: train 2019-03-01..2023-03-26 | val 2023-03-29..2023-06-28 | test 2023-07-01..2023-12-31
+fold  5: train 2019-03-01..2023-09-27 | val 2023-09-30..2023-12-29 | test 2024-01-01..2024-06-30
+fold  6: train 2019-03-01..2024-03-26 | val 2024-03-29..2024-06-28 | test 2024-07-01..2024-12-31
+fold  7: train 2019-03-01..2024-09-27 | val 2024-09-30..2024-12-29 | test 2025-01-01..2025-06-30
+fold  8: train 2019-03-01..2025-03-26 | val 2025-03-29..2025-06-28 | test 2025-07-01..2025-12-31
+fold  9: train 2019-03-01..2025-09-27 | val 2025-09-30..2025-12-29 | test 2026-01-01..2026-06-30
+fold 10: train 2019-03-01..2026-03-26 | val 2026-03-29..2026-06-28 | test 2026-07-01..2026-08-30
+
+==============================================================================
+BASELINES / SAĞDUYU REFERANSLARI  (before any training)
+==============================================================================
+             ic_mean   icir  ic_tstat_nw  sharpe_gross  sharpe_net  turnover
+model                                                                       
+Ridge          0.111  0.337       15.448         1.102      -0.058     1.490
+Reversal24h    0.024  0.095        4.037        -0.026      -2.853     3.068
+Random        -0.006 -0.034       -1.348        -0.055      -4.227     3.224
+Momentum7d    -0.015 -0.055       -2.355         0.597      -0.436     1.233
+
+==============================================================================
+MODELS / MODELLER
+==============================================================================
+
+fold  1: train 2019-03-01..2021-09-27 | val 2021-09-30..2021-12-29 | test 2022-01-01..2022-06-30  (rows: train 24,282 / val 2,580 / test 5,398)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9527  val 0.9420  (1.7s) *
+    epoch  2/30  train 0.9452  val 0.9388  (1.3s) *
+    epoch  3/30  train 0.9447  val 0.9411  (1.4s)
+    epoch  4/30  train 0.9413  val 0.9389  (1.3s)
+    epoch  5/30  train 0.9392  val 0.9388  (1.3s)
+    epoch  6/30  train 0.9372  val 0.9394  (1.4s)
+    epoch  7/30  train 0.9363  val 0.9419  (1.4s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9569  val 0.9392  (7.2s) *
+    epoch  2/30  train 0.9456  val 0.9382  (7.2s) *
+    epoch  3/30  train 0.9452  val 0.9378  (7.2s) *
+    epoch  4/30  train 0.9427  val 0.9412  (7.2s)
+    epoch  5/30  train 0.9406  val 0.9393  (7.2s)
+    epoch  6/30  train 0.9380  val 0.9390  (7.2s)
+    epoch  7/30  train 0.9370  val 0.9409  (7.2s)
+    epoch  8/30  train 0.9354  val 0.9405  (7.2s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.2793  val 0.2575  (1.5s) *
+    epoch  2/30  train 0.2542  val 0.2564  (1.4s) *
+    epoch  3/30  train 0.2533  val 0.2565  (1.4s)
+    epoch  4/30  train 0.2526  val 0.2561  (1.3s) *
+    epoch  5/30  train 0.2521  val 0.2561  (1.4s)
+    epoch  6/30  train 0.2514  val 0.2561  (1.4s)
+    epoch  7/30  train 0.2514  val 0.2563  (1.4s)
+    epoch  8/30  train 0.2511  val 0.2560  (1.4s) *
+    epoch  9/30  train 0.2508  val 0.2562  (1.4s)
+    epoch 10/30  train 0.2507  val 0.2562  (1.4s)
+    epoch 11/30  train 0.2504  val 0.2561  (1.4s)
+    epoch 12/30  train 0.2504  val 0.2561  (1.3s)
+    epoch 13/30  train 0.2504  val 0.2562  (1.4s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.2696  val 0.2590  (7.2s) *
+    epoch  2/30  train 0.2552  val 0.2568  (7.2s) *
+    epoch  3/30  train 0.2535  val 0.2571  (7.3s)
+    epoch  4/30  train 0.2525  val 0.2564  (7.3s) *
+    epoch  5/30  train 0.2519  val 0.2564  (7.2s)
+    epoch  6/30  train 0.2512  val 0.2571  (7.2s)
+    epoch  7/30  train 0.2508  val 0.2567  (7.3s)
+    epoch  8/30  train 0.2505  val 0.2567  (7.2s)
+    epoch  9/30  train 0.2502  val 0.2566  (7.2s)
+  test IC: LightGBM +0.1597  LightGBM-shuffled -0.0115  GRU +0.1566  Transformer +0.1568
+
+fold  2: train 2019-03-01..2022-03-26 | val 2022-03-29..2022-06-28 | test 2022-07-01..2022-12-31  (rows: train 29,518 / val 2,742 / test 5,520)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9483  val 0.9291  (2.1s) *
+    epoch  2/30  train 0.9447  val 0.9303  (1.8s)
+    epoch  3/30  train 0.9427  val 0.9313  (1.7s)
+    epoch  4/30  train 0.9411  val 0.9315  (1.8s)
+    epoch  5/30  train 0.9383  val 0.9301  (1.8s)
+    epoch  6/30  train 0.9372  val 0.9316  (1.7s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9556  val 0.9362  (8.9s) *
+    epoch  2/30  train 0.9459  val 0.9369  (9.0s)
+    epoch  3/30  train 0.9423  val 0.9335  (9.1s) *
+    epoch  4/30  train 0.9407  val 0.9328  (9.2s) *
+    epoch  5/30  train 0.9389  val 0.9302  (9.3s) *
+    epoch  6/30  train 0.9395  val 0.9327  (10.9s)
+    epoch  7/30  train 0.9387  val 0.9347  (9.0s)
+    epoch  8/30  train 0.9378  val 0.9344  (9.0s)
+    epoch  9/30  train 0.9364  val 0.9315  (8.9s)
+    epoch 10/30  train 0.9337  val 0.9328  (8.9s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.2761  val 0.3402  (1.7s) *
+    epoch  2/30  train 0.2546  val 0.3406  (1.7s)
+    epoch  3/30  train 0.2539  val 0.3407  (1.7s)
+    epoch  4/30  train 0.2531  val 0.3407  (1.7s)
+    epoch  5/30  train 0.2526  val 0.3405  (1.6s)
+    epoch  6/30  train 0.2523  val 0.3406  (1.8s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.2680  val 0.3422  (8.9s) *
+    epoch  2/30  train 0.2552  val 0.3413  (8.9s) *
+    epoch  3/30  train 0.2539  val 0.3408  (8.8s) *
+    epoch  4/30  train 0.2530  val 0.3403  (8.9s) *
+    epoch  5/30  train 0.2524  val 0.3398  (8.8s) *
+    epoch  6/30  train 0.2519  val 0.3406  (8.8s)
+    epoch  7/30  train 0.2518  val 0.3408  (8.8s)
+    epoch  8/30  train 0.2513  val 0.3399  (8.9s)
+    epoch  9/30  train 0.2511  val 0.3404  (8.8s)
+    epoch 10/30  train 0.2507  val 0.3397  (8.8s) *
+    epoch 11/30  train 0.2505  val 0.3398  (8.8s)
+    epoch 12/30  train 0.2503  val 0.3398  (8.9s)
+    epoch 13/30  train 0.2503  val 0.3396  (8.9s) *
+    epoch 14/30  train 0.2503  val 0.3401  (8.8s)
+    epoch 15/30  train 0.2502  val 0.3402  (8.9s)
+    epoch 16/30  train 0.2501  val 0.3399  (8.8s)
+    epoch 17/30  train 0.2497  val 0.3399  (8.9s)
+    epoch 18/30  train 0.2498  val 0.3396  (8.9s) *
+    epoch 19/30  train 0.2497  val 0.3402  (8.8s)
+    epoch 20/30  train 0.2496  val 0.3398  (8.8s)
+    epoch 21/30  train 0.2494  val 0.3400  (8.9s)
+    epoch 22/30  train 0.2495  val 0.3399  (8.9s)
+    epoch 23/30  train 0.2495  val 0.3398  (8.9s)
+  test IC: LightGBM +0.1401  LightGBM-shuffled -0.0543  GRU +0.1234  Transformer +0.1301
+
+fold  3: train 2019-03-01..2022-09-27 | val 2022-09-30..2022-12-29 | test 2023-01-01..2023-06-30  (rows: train 35,050 / val 2,730 / test 5,280)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9485  val 0.9375  (2.0s) *
+    epoch  2/30  train 0.9424  val 0.9360  (2.0s) *
+    epoch  3/30  train 0.9407  val 0.9338  (1.9s) *
+    epoch  4/30  train 0.9396  val 0.9329  (2.0s) *
+    epoch  5/30  train 0.9384  val 0.9307  (1.9s) *
+    epoch  6/30  train 0.9363  val 0.9292  (1.9s) *
+    epoch  7/30  train 0.9350  val 0.9288  (2.0s) *
+    epoch  8/30  train 0.9339  val 0.9272  (2.0s) *
+    epoch  9/30  train 0.9319  val 0.9273  (2.0s)
+    epoch 10/30  train 0.9307  val 0.9246  (1.9s) *
+    epoch 11/30  train 0.9299  val 0.9274  (1.9s)
+    epoch 12/30  train 0.9308  val 0.9239  (1.9s) *
+    epoch 13/30  train 0.9282  val 0.9254  (2.1s)
+    epoch 14/30  train 0.9273  val 0.9241  (1.9s)
+    epoch 15/30  train 0.9277  val 0.9248  (1.9s)
+    epoch 16/30  train 0.9244  val 0.9240  (1.9s)
+    epoch 17/30  train 0.9231  val 0.9227  (2.0s) *
+    epoch 18/30  train 0.9227  val 0.9227  (1.9s)
+    epoch 19/30  train 0.9222  val 0.9227  (2.0s) *
+    epoch 20/30  train 0.9211  val 0.9242  (1.9s)
+    epoch 21/30  train 0.9191  val 0.9242  (1.9s)
+    epoch 22/30  train 0.9181  val 0.9239  (1.9s)
+    epoch 23/30  train 0.9191  val 0.9237  (1.9s)
+    epoch 24/30  train 0.9172  val 0.9243  (1.9s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9534  val 0.9365  (10.5s) *
+    epoch  2/30  train 0.9446  val 0.9341  (10.5s) *
+    epoch  3/30  train 0.9417  val 0.9312  (10.5s) *
+    epoch  4/30  train 0.9401  val 0.9307  (10.5s) *
+    epoch  5/30  train 0.9392  val 0.9291  (10.5s) *
+    epoch  6/30  train 0.9374  val 0.9275  (10.5s) *
+    epoch  7/30  train 0.9373  val 0.9292  (10.5s)
+    epoch  8/30  train 0.9359  val 0.9261  (10.5s) *
+    epoch  9/30  train 0.9348  val 0.9266  (10.5s)
+    epoch 10/30  train 0.9341  val 0.9249  (10.5s) *
+    epoch 11/30  train 0.9340  val 0.9243  (10.5s) *
+    epoch 12/30  train 0.9338  val 0.9244  (10.5s)
+    epoch 13/30  train 0.9312  val 0.9247  (10.5s)
+    epoch 14/30  train 0.9328  val 0.9233  (10.5s) *
+    epoch 15/30  train 0.9307  val 0.9231  (10.5s) *
+    epoch 16/30  train 0.9296  val 0.9245  (10.5s)
+    epoch 17/30  train 0.9292  val 0.9220  (10.5s) *
+    epoch 18/30  train 0.9276  val 0.9234  (10.5s)
+    epoch 19/30  train 0.9268  val 0.9248  (10.5s)
+    epoch 20/30  train 0.9274  val 0.9230  (10.4s)
+    epoch 21/30  train 0.9246  val 0.9241  (10.5s)
+    epoch 22/30  train 0.9221  val 0.9230  (10.5s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1741  val 0.1192  (2.0s) *
+    epoch  2/30  train 0.1634  val 0.1186  (2.0s) *
+    epoch  3/30  train 0.1628  val 0.1185  (2.0s) *
+    epoch  4/30  train 0.1624  val 0.1187  (2.0s)
+    epoch  5/30  train 0.1621  val 0.1187  (2.0s)
+    epoch  6/30  train 0.1618  val 0.1186  (1.9s)
+    epoch  7/30  train 0.1615  val 0.1184  (2.0s) *
+    epoch  8/30  train 0.1615  val 0.1182  (2.0s) *
+    epoch  9/30  train 0.1614  val 0.1183  (2.0s)
+    epoch 10/30  train 0.1612  val 0.1182  (2.0s)
+    epoch 11/30  train 0.1612  val 0.1183  (2.0s)
+    epoch 12/30  train 0.1611  val 0.1183  (2.0s)
+    epoch 13/30  train 0.1610  val 0.1181  (2.1s) *
+    epoch 14/30  train 0.1610  val 0.1182  (2.0s)
+    epoch 15/30  train 0.1609  val 0.1181  (1.9s) *
+    epoch 16/30  train 0.1609  val 0.1181  (2.0s) *
+    epoch 17/30  train 0.1608  val 0.1182  (2.0s)
+    epoch 18/30  train 0.1608  val 0.1182  (2.0s)
+    epoch 19/30  train 0.1608  val 0.1181  (2.0s)
+    epoch 20/30  train 0.1607  val 0.1182  (2.0s)
+    epoch 21/30  train 0.1607  val 0.1181  (2.0s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1706  val 0.1194  (10.5s) *
+    epoch  2/30  train 0.1636  val 0.1187  (10.6s) *
+    epoch  3/30  train 0.1627  val 0.1183  (10.5s) *
+    epoch  4/30  train 0.1621  val 0.1187  (10.5s)
+    epoch  5/30  train 0.1619  val 0.1182  (10.5s) *
+    epoch  6/30  train 0.1615  val 0.1182  (10.5s)
+    epoch  7/30  train 0.1614  val 0.1183  (10.5s)
+    epoch  8/30  train 0.1612  val 0.1185  (10.5s)
+    epoch  9/30  train 0.1610  val 0.1182  (10.5s)
+    epoch 10/30  train 0.1608  val 0.1184  (10.5s)
+  test IC: LightGBM +0.1020  LightGBM-shuffled +0.0038  GRU +0.0944  Transformer +0.1087
+
+fold  4: train 2019-03-01..2023-03-26 | val 2023-03-29..2023-06-28 | test 2023-07-01..2023-12-31  (rows: train 40,390 / val 2,730 / test 5,520)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9483  val 0.9441  (2.3s) *
+    epoch  2/30  train 0.9435  val 0.9455  (2.2s)
+    epoch  3/30  train 0.9415  val 0.9473  (2.3s)
+    epoch  4/30  train 0.9397  val 0.9499  (2.3s)
+    epoch  5/30  train 0.9386  val 0.9466  (2.3s)
+    epoch  6/30  train 0.9367  val 0.9467  (2.3s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9534  val 0.9469  (12.0s) *
+    epoch  2/30  train 0.9441  val 0.9486  (11.9s)
+    epoch  3/30  train 0.9414  val 0.9453  (11.9s) *
+    epoch  4/30  train 0.9407  val 0.9477  (11.9s)
+    epoch  5/30  train 0.9390  val 0.9448  (12.0s) *
+    epoch  6/30  train 0.9389  val 0.9441  (11.9s) *
+    epoch  7/30  train 0.9381  val 0.9446  (12.0s)
+    epoch  8/30  train 0.9379  val 0.9494  (12.0s)
+    epoch  9/30  train 0.9351  val 0.9445  (11.9s)
+    epoch 10/30  train 0.9344  val 0.9437  (12.0s) *
+    epoch 11/30  train 0.9338  val 0.9437  (12.0s)
+    epoch 12/30  train 0.9326  val 0.9455  (12.0s)
+    epoch 13/30  train 0.9331  val 0.9439  (12.1s)
+    epoch 14/30  train 0.9316  val 0.9445  (12.0s)
+    epoch 15/30  train 0.9318  val 0.9438  (12.0s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1770  val 0.1149  (2.3s) *
+    epoch  2/30  train 0.1673  val 0.1145  (2.3s) *
+    epoch  3/30  train 0.1667  val 0.1145  (2.3s)
+    epoch  4/30  train 0.1663  val 0.1144  (2.3s) *
+    epoch  5/30  train 0.1660  val 0.1142  (2.3s) *
+    epoch  6/30  train 0.1657  val 0.1141  (2.3s) *
+    epoch  7/30  train 0.1655  val 0.1140  (2.3s) *
+    epoch  8/30  train 0.1654  val 0.1142  (2.3s)
+    epoch  9/30  train 0.1652  val 0.1141  (2.3s)
+    epoch 10/30  train 0.1652  val 0.1144  (2.3s)
+    epoch 11/30  train 0.1649  val 0.1141  (2.2s)
+    epoch 12/30  train 0.1647  val 0.1143  (2.3s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1738  val 0.1146  (12.3s) *
+    epoch  2/30  train 0.1674  val 0.1142  (12.1s) *
+    epoch  3/30  train 0.1666  val 0.1140  (12.1s) *
+    epoch  4/30  train 0.1660  val 0.1141  (12.1s)
+    epoch  5/30  train 0.1657  val 0.1141  (12.1s)
+    epoch  6/30  train 0.1656  val 0.1142  (12.1s)
+    epoch  7/30  train 0.1653  val 0.1140  (12.0s)
+    epoch  8/30  train 0.1652  val 0.1141  (12.1s)
+  test IC: LightGBM +0.1250  LightGBM-shuffled +0.0173  GRU +0.1177  Transformer +0.1272
+
+fold  5: train 2019-03-01..2023-09-27 | val 2023-09-30..2023-12-29 | test 2024-01-01..2024-06-30  (rows: train 45,850 / val 2,730 / test 5,460)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9469  val 0.9496  (2.7s) *
+    epoch  2/30  train 0.9434  val 0.9447  (2.6s) *
+    epoch  3/30  train 0.9404  val 0.9456  (2.6s)
+    epoch  4/30  train 0.9403  val 0.9481  (2.6s)
+    epoch  5/30  train 0.9394  val 0.9463  (2.6s)
+    epoch  6/30  train 0.9370  val 0.9445  (2.6s) *
+    epoch  7/30  train 0.9361  val 0.9470  (2.6s)
+    epoch  8/30  train 0.9355  val 0.9488  (2.6s)
+    epoch  9/30  train 0.9361  val 0.9466  (2.6s)
+    epoch 10/30  train 0.9337  val 0.9467  (2.5s)
+    epoch 11/30  train 0.9338  val 0.9483  (2.6s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9519  val 0.9478  (13.6s) *
+    epoch  2/30  train 0.9442  val 0.9440  (13.7s) *
+    epoch  3/30  train 0.9414  val 0.9447  (13.7s)
+    epoch  4/30  train 0.9407  val 0.9470  (13.7s)
+    epoch  5/30  train 0.9387  val 0.9430  (13.7s) *
+    epoch  6/30  train 0.9384  val 0.9405  (13.7s) *
+    epoch  7/30  train 0.9378  val 0.9437  (13.6s)
+    epoch  8/30  train 0.9367  val 0.9449  (13.7s)
+    epoch  9/30  train 0.9364  val 0.9436  (13.7s)
+    epoch 10/30  train 0.9343  val 0.9467  (13.6s)
+    epoch 11/30  train 0.9340  val 0.9454  (13.7s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1778  val 0.1857  (2.6s) *
+    epoch  2/30  train 0.1690  val 0.1854  (2.6s) *
+    epoch  3/30  train 0.1683  val 0.1852  (2.6s) *
+    epoch  4/30  train 0.1681  val 0.1852  (2.5s)
+    epoch  5/30  train 0.1678  val 0.1856  (2.5s)
+    epoch  6/30  train 0.1675  val 0.1848  (2.6s) *
+    epoch  7/30  train 0.1674  val 0.1849  (2.6s)
+    epoch  8/30  train 0.1673  val 0.1852  (2.6s)
+    epoch  9/30  train 0.1672  val 0.1849  (2.6s)
+    epoch 10/30  train 0.1669  val 0.1847  (2.6s) *
+    epoch 11/30  train 0.1667  val 0.1850  (2.5s)
+    epoch 12/30  train 0.1667  val 0.1851  (2.6s)
+    epoch 13/30  train 0.1666  val 0.1851  (2.6s)
+    epoch 14/30  train 0.1665  val 0.1850  (2.7s)
+    epoch 15/30  train 0.1664  val 0.1850  (2.6s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1750  val 0.1860  (13.8s) *
+    epoch  2/30  train 0.1690  val 0.1854  (13.7s) *
+    epoch  3/30  train 0.1684  val 0.1858  (13.7s)
+    epoch  4/30  train 0.1680  val 0.1855  (13.7s)
+    epoch  5/30  train 0.1676  val 0.1852  (13.7s) *
+    epoch  6/30  train 0.1675  val 0.1850  (13.7s) *
+    epoch  7/30  train 0.1673  val 0.1853  (13.7s)
+    epoch  8/30  train 0.1671  val 0.1851  (13.7s)
+    epoch  9/30  train 0.1669  val 0.1853  (13.7s)
+    epoch 10/30  train 0.1667  val 0.1852  (13.7s)
+    epoch 11/30  train 0.1666  val 0.1851  (13.7s)
+  test IC: LightGBM +0.1144  LightGBM-shuffled +0.0388  GRU +0.1076  Transformer +0.1045
+
+fold  6: train 2019-03-01..2024-03-26 | val 2024-03-29..2024-06-28 | test 2024-07-01..2024-12-31  (rows: train 51,280 / val 2,760 / test 5,491)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9476  val 0.9565  (3.0s) *
+    epoch  2/30  train 0.9429  val 0.9539  (2.9s) *
+    epoch  3/30  train 0.9415  val 0.9544  (2.9s)
+    epoch  4/30  train 0.9404  val 0.9544  (2.9s)
+    epoch  5/30  train 0.9396  val 0.9531  (2.8s) *
+    epoch  6/30  train 0.9382  val 0.9538  (2.8s)
+    epoch  7/30  train 0.9372  val 0.9531  (2.9s) *
+    epoch  8/30  train 0.9363  val 0.9545  (2.9s)
+    epoch  9/30  train 0.9347  val 0.9533  (2.9s)
+    epoch 10/30  train 0.9344  val 0.9551  (2.9s)
+    epoch 11/30  train 0.9339  val 0.9547  (2.8s)
+    epoch 12/30  train 0.9332  val 0.9541  (2.8s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9515  val 0.9548  (15.1s) *
+    epoch  2/30  train 0.9443  val 0.9524  (15.2s) *
+    epoch  3/30  train 0.9412  val 0.9526  (15.2s)
+    epoch  4/30  train 0.9394  val 0.9539  (15.1s)
+    epoch  5/30  train 0.9388  val 0.9523  (15.2s) *
+    epoch  6/30  train 0.9386  val 0.9532  (15.0s)
+    epoch  7/30  train 0.9376  val 0.9529  (14.9s)
+    epoch  8/30  train 0.9361  val 0.9557  (14.9s)
+    epoch  9/30  train 0.9358  val 0.9547  (15.0s)
+    epoch 10/30  train 0.9342  val 0.9565  (15.0s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1836  val 0.1513  (2.5s) *
+    epoch  2/30  train 0.1750  val 0.1513  (2.6s) *
+    epoch  3/30  train 0.1744  val 0.1514  (2.6s)
+    epoch  4/30  train 0.1740  val 0.1509  (2.6s) *
+    epoch  5/30  train 0.1738  val 0.1510  (2.6s)
+    epoch  6/30  train 0.1735  val 0.1511  (2.6s)
+    epoch  7/30  train 0.1735  val 0.1510  (2.5s)
+    epoch  8/30  train 0.1731  val 0.1509  (2.6s) *
+    epoch  9/30  train 0.1731  val 0.1509  (2.6s)
+    epoch 10/30  train 0.1730  val 0.1511  (2.6s)
+    epoch 11/30  train 0.1729  val 0.1510  (2.6s)
+    epoch 12/30  train 0.1728  val 0.1507  (2.6s) *
+    epoch 13/30  train 0.1727  val 0.1509  (2.6s)
+    epoch 14/30  train 0.1726  val 0.1508  (2.6s)
+    epoch 15/30  train 0.1726  val 0.1508  (2.6s)
+    epoch 16/30  train 0.1725  val 0.1509  (2.6s)
+    epoch 17/30  train 0.1724  val 0.1509  (2.6s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1810  val 0.1514  (15.0s) *
+    epoch  2/30  train 0.1750  val 0.1512  (15.0s) *
+    epoch  3/30  train 0.1743  val 0.1511  (15.0s) *
+    epoch  4/30  train 0.1739  val 0.1510  (15.0s) *
+    epoch  5/30  train 0.1736  val 0.1511  (15.0s)
+    epoch  6/30  train 0.1734  val 0.1512  (14.9s)
+    epoch  7/30  train 0.1733  val 0.1509  (14.9s) *
+    epoch  8/30  train 0.1731  val 0.1517  (14.9s)
+    epoch  9/30  train 0.1730  val 0.1514  (14.9s)
+    epoch 10/30  train 0.1730  val 0.1514  (15.0s)
+    epoch 11/30  train 0.1726  val 0.1511  (14.9s)
+    epoch 12/30  train 0.1725  val 0.1510  (14.9s)
+  test IC: LightGBM +0.1125  LightGBM-shuffled -0.0202  GRU +0.1131  Transformer +0.1096
+
+fold  7: train 2019-03-01..2024-09-27 | val 2024-09-30..2024-12-29 | test 2025-01-01..2025-06-30  (rows: train 56,804 / val 2,729 / test 5,365)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9484  val 0.9460  (2.9s) *
+    epoch  2/30  train 0.9445  val 0.9426  (2.8s) *
+    epoch  3/30  train 0.9428  val 0.9415  (2.8s) *
+    epoch  4/30  train 0.9412  val 0.9420  (2.8s)
+    epoch  5/30  train 0.9396  val 0.9402  (2.8s) *
+    epoch  6/30  train 0.9391  val 0.9413  (2.8s)
+    epoch  7/30  train 0.9388  val 0.9432  (2.8s)
+    epoch  8/30  train 0.9374  val 0.9423  (2.8s)
+    epoch  9/30  train 0.9361  val 0.9429  (2.8s)
+    epoch 10/30  train 0.9359  val 0.9429  (2.8s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9530  val 0.9461  (16.6s) *
+    epoch  2/30  train 0.9446  val 0.9432  (16.5s) *
+    epoch  3/30  train 0.9425  val 0.9420  (16.5s) *
+    epoch  4/30  train 0.9409  val 0.9416  (16.5s) *
+    epoch  5/30  train 0.9398  val 0.9415  (16.6s) *
+    epoch  6/30  train 0.9391  val 0.9419  (16.6s)
+    epoch  7/30  train 0.9385  val 0.9431  (16.5s)
+    epoch  8/30  train 0.9374  val 0.9428  (16.5s)
+    epoch  9/30  train 0.9364  val 0.9419  (16.5s)
+    epoch 10/30  train 0.9360  val 0.9421  (16.6s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1869  val 0.1934  (2.8s) *
+    epoch  2/30  train 0.1788  val 0.1930  (2.8s) *
+    epoch  3/30  train 0.1782  val 0.1929  (2.8s) *
+    epoch  4/30  train 0.1780  val 0.1933  (2.8s)
+    epoch  5/30  train 0.1778  val 0.1928  (2.8s) *
+    epoch  6/30  train 0.1775  val 0.1926  (2.8s) *
+    epoch  7/30  train 0.1774  val 0.1927  (2.8s)
+    epoch  8/30  train 0.1771  val 0.1928  (2.9s)
+    epoch  9/30  train 0.1769  val 0.1927  (2.8s)
+    epoch 10/30  train 0.1768  val 0.1930  (2.8s)
+    epoch 11/30  train 0.1767  val 0.1927  (2.9s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1844  val 0.1942  (16.6s) *
+    epoch  2/30  train 0.1790  val 0.1935  (16.6s) *
+    epoch  3/30  train 0.1783  val 0.1932  (16.5s) *
+    epoch  4/30  train 0.1778  val 0.1941  (16.6s)
+    epoch  5/30  train 0.1776  val 0.1935  (16.6s)
+    epoch  6/30  train 0.1774  val 0.1928  (16.6s) *
+    epoch  7/30  train 0.1772  val 0.1929  (16.6s)
+    epoch  8/30  train 0.1770  val 0.1931  (16.6s)
+    epoch  9/30  train 0.1770  val 0.1933  (16.6s)
+    epoch 10/30  train 0.1767  val 0.1930  (16.5s)
+    epoch 11/30  train 0.1766  val 0.1930  (16.6s)
+  test IC: LightGBM +0.1070  LightGBM-shuffled -0.0226  GRU +0.1055  Transformer +0.0987
+
+fold  8: train 2019-03-01..2025-03-26 | val 2025-03-29..2025-06-28 | test 2025-07-01..2025-12-31  (rows: train 62,175 / val 2,723 / test 5,520)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9483  val 0.9519  (3.1s) *
+    epoch  2/30  train 0.9443  val 0.9519  (3.0s)
+    epoch  3/30  train 0.9422  val 0.9523  (3.1s)
+    epoch  4/30  train 0.9412  val 0.9495  (3.1s) *
+    epoch  5/30  train 0.9394  val 0.9522  (3.0s)
+    epoch  6/30  train 0.9393  val 0.9530  (3.1s)
+    epoch  7/30  train 0.9384  val 0.9522  (3.0s)
+    epoch  8/30  train 0.9369  val 0.9537  (3.0s)
+    epoch  9/30  train 0.9366  val 0.9526  (3.0s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9525  val 0.9521  (17.9s) *
+    epoch  2/30  train 0.9448  val 0.9506  (17.9s) *
+    epoch  3/30  train 0.9422  val 0.9523  (17.9s)
+    epoch  4/30  train 0.9412  val 0.9496  (17.9s) *
+    epoch  5/30  train 0.9403  val 0.9514  (17.9s)
+    epoch  6/30  train 0.9396  val 0.9520  (17.9s)
+    epoch  7/30  train 0.9395  val 0.9484  (18.0s) *
+    epoch  8/30  train 0.9383  val 0.9529  (17.9s)
+    epoch  9/30  train 0.9382  val 0.9506  (17.9s)
+    epoch 10/30  train 0.9376  val 0.9519  (17.9s)
+    epoch 11/30  train 0.9369  val 0.9503  (17.9s)
+    epoch 12/30  train 0.9357  val 0.9509  (17.9s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1909  val 0.1549  (3.2s) *
+    epoch  2/30  train 0.1835  val 0.1549  (3.1s)
+    epoch  3/30  train 0.1829  val 0.1547  (3.1s) *
+    epoch  4/30  train 0.1825  val 0.1548  (3.1s)
+    epoch  5/30  train 0.1822  val 0.1541  (3.1s) *
+    epoch  6/30  train 0.1820  val 0.1543  (3.1s)
+    epoch  7/30  train 0.1819  val 0.1539  (3.1s) *
+    epoch  8/30  train 0.1816  val 0.1550  (3.1s)
+    epoch  9/30  train 0.1815  val 0.1540  (3.1s)
+    epoch 10/30  train 0.1813  val 0.1548  (3.1s)
+    epoch 11/30  train 0.1812  val 0.1540  (3.2s)
+    epoch 12/30  train 0.1810  val 0.1542  (3.1s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1888  val 0.1548  (17.9s) *
+    epoch  2/30  train 0.1835  val 0.1545  (18.0s) *
+    epoch  3/30  train 0.1828  val 0.1540  (18.0s) *
+    epoch  4/30  train 0.1824  val 0.1550  (17.9s)
+    epoch  5/30  train 0.1822  val 0.1539  (17.9s) *
+    epoch  6/30  train 0.1820  val 0.1542  (18.0s)
+    epoch  7/30  train 0.1819  val 0.1544  (17.9s)
+    epoch  8/30  train 0.1817  val 0.1549  (17.9s)
+    epoch  9/30  train 0.1814  val 0.1540  (17.9s)
+    epoch 10/30  train 0.1813  val 0.1549  (18.0s)
+  test IC: LightGBM +0.1156  LightGBM-shuffled +0.0042  GRU +0.1069  Transformer +0.1017
+
+fold  9: train 2019-03-01..2025-09-27 | val 2025-09-30..2025-12-29 | test 2026-01-01..2026-06-30  (rows: train 67,686 / val 2,730 / test 5,430)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9483  val 0.9518  (3.4s) *
+    epoch  2/30  train 0.9443  val 0.9478  (3.3s) *
+    epoch  3/30  train 0.9429  val 0.9470  (3.3s) *
+    epoch  4/30  train 0.9411  val 0.9478  (3.3s)
+    epoch  5/30  train 0.9407  val 0.9485  (3.2s)
+    epoch  6/30  train 0.9398  val 0.9494  (3.3s)
+    epoch  7/30  train 0.9382  val 0.9473  (3.2s)
+    epoch  8/30  train 0.9386  val 0.9470  (3.3s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9505  val 0.9544  (19.7s) *
+    epoch  2/30  train 0.9448  val 0.9493  (19.7s) *
+    epoch  3/30  train 0.9433  val 0.9494  (19.6s)
+    epoch  4/30  train 0.9422  val 0.9507  (19.6s)
+    epoch  5/30  train 0.9411  val 0.9505  (19.6s)
+    epoch  6/30  train 0.9397  val 0.9484  (19.7s) *
+    epoch  7/30  train 0.9386  val 0.9502  (19.6s)
+    epoch  8/30  train 0.9391  val 0.9501  (19.6s)
+    epoch  9/30  train 0.9386  val 0.9509  (19.6s)
+    epoch 10/30  train 0.9380  val 0.9497  (19.6s)
+    epoch 11/30  train 0.9376  val 0.9497  (19.7s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1924  val 0.1482  (3.3s) *
+    epoch  2/30  train 0.1853  val 0.1481  (3.3s) *
+    epoch  3/30  train 0.1848  val 0.1477  (3.4s) *
+    epoch  4/30  train 0.1844  val 0.1477  (3.3s) *
+    epoch  5/30  train 0.1841  val 0.1476  (3.3s) *
+    epoch  6/30  train 0.1840  val 0.1474  (3.3s) *
+    epoch  7/30  train 0.1838  val 0.1473  (3.3s) *
+    epoch  8/30  train 0.1837  val 0.1472  (3.3s) *
+    epoch  9/30  train 0.1834  val 0.1475  (3.4s)
+    epoch 10/30  train 0.1834  val 0.1476  (3.4s)
+    epoch 11/30  train 0.1833  val 0.1474  (3.4s)
+    epoch 12/30  train 0.1830  val 0.1472  (3.3s)
+    epoch 13/30  train 0.1829  val 0.1473  (3.3s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1902  val 0.1486  (19.7s) *
+    epoch  2/30  train 0.1854  val 0.1476  (19.7s) *
+    epoch  3/30  train 0.1846  val 0.1469  (19.6s) *
+    epoch  4/30  train 0.1843  val 0.1473  (19.6s)
+    epoch  5/30  train 0.1840  val 0.1471  (20.0s)
+    epoch  6/30  train 0.1840  val 0.1470  (20.1s)
+    epoch  7/30  train 0.1837  val 0.1471  (20.1s)
+    epoch  8/30  train 0.1835  val 0.1471  (20.2s)
+  test IC: LightGBM +0.0921  LightGBM-shuffled -0.0399  GRU +0.0920  Transformer +0.0915
+
+fold 10: train 2019-03-01..2026-03-26 | val 2026-03-29..2026-06-28 | test 2026-07-01..2026-08-30  (rows: train 73,086 / val 2,760 / test 1,799)
+  [GRU] 19,585 parameters
+    epoch  1/30  train 0.9474  val 0.9536  (4.1s) *
+    epoch  2/30  train 0.9447  val 0.9497  (4.1s) *
+    epoch  3/30  train 0.9437  val 0.9546  (4.0s)
+    epoch  4/30  train 0.9423  val 0.9510  (4.1s)
+    epoch  5/30  train 0.9414  val 0.9513  (4.1s)
+    epoch  6/30  train 0.9400  val 0.9516  (4.2s)
+    epoch  7/30  train 0.9390  val 0.9493  (4.3s) *
+    epoch  8/30  train 0.9394  val 0.9504  (4.0s)
+    epoch  9/30  train 0.9387  val 0.9496  (4.1s)
+    epoch 10/30  train 0.9384  val 0.9525  (4.1s)
+    epoch 11/30  train 0.9376  val 0.9510  (4.4s)
+    epoch 12/30  train 0.9372  val 0.9499  (4.3s)
+  [Transformer] 29,569 parameters
+    epoch  1/30  train 0.9502  val 0.9517  (21.8s) *
+    epoch  2/30  train 0.9457  val 0.9494  (21.7s) *
+    epoch  3/30  train 0.9431  val 0.9536  (21.7s)
+    epoch  4/30  train 0.9424  val 0.9518  (21.6s)
+    epoch  5/30  train 0.9417  val 0.9494  (21.8s)
+    epoch  6/30  train 0.9404  val 0.9488  (21.8s) *
+    epoch  7/30  train 0.9393  val 0.9460  (21.8s) *
+    epoch  8/30  train 0.9386  val 0.9494  (21.9s)
+    epoch  9/30  train 0.9387  val 0.9475  (21.9s)
+    epoch 10/30  train 0.9387  val 0.9512  (21.8s)
+    epoch 11/30  train 0.9368  val 0.9500  (21.4s)
+    epoch 12/30  train 0.9369  val 0.9484  (21.3s)
+  [GRU-Q] 20,105 parameters
+    epoch  1/30  train 0.1937  val 0.1517  (3.7s) *
+    epoch  2/30  train 0.1867  val 0.1513  (3.7s) *
+    epoch  3/30  train 0.1862  val 0.1515  (3.8s)
+    epoch  4/30  train 0.1859  val 0.1509  (3.8s) *
+    epoch  5/30  train 0.1856  val 0.1511  (3.8s)
+    epoch  6/30  train 0.1854  val 0.1506  (3.9s) *
+    epoch  7/30  train 0.1852  val 0.1507  (3.7s)
+    epoch  8/30  train 0.1851  val 0.1511  (3.7s)
+    epoch  9/30  train 0.1849  val 0.1508  (3.7s)
+    epoch 10/30  train 0.1847  val 0.1508  (3.7s)
+    epoch 11/30  train 0.1847  val 0.1508  (3.7s)
+  [Transformer-Q] 30,089 parameters
+    epoch  1/30  train 0.1916  val 0.1513  (21.3s) *
+    epoch  2/30  train 0.1867  val 0.1508  (21.3s) *
+    epoch  3/30  train 0.1861  val 0.1511  (21.4s)
+    epoch  4/30  train 0.1858  val 0.1508  (21.3s) *
+    epoch  5/30  train 0.1856  val 0.1510  (21.4s)
+    epoch  6/30  train 0.1853  val 0.1507  (21.3s) *
+    epoch  7/30  train 0.1852  val 0.1507  (21.3s) *
+    epoch  8/30  train 0.1851  val 0.1510  (21.2s)
+    epoch  9/30  train 0.1849  val 0.1507  (21.3s)
+    epoch 10/30  train 0.1848  val 0.1509  (21.2s)
+    epoch 11/30  train 0.1846  val 0.1509  (21.3s)
+    epoch 12/30  train 0.1845  val 0.1508  (21.3s)
+  test IC: LightGBM +0.1072  LightGBM-shuffled -0.0323  GRU +0.1165  Transformer +0.1089
+
+==============================================================================
+RESULTS / SONUÇLAR  (out of sample, stitched folds)
+==============================================================================
+                           ic_mean   icir  ic_tstat_nw  sharpe_gross  sharpe_net  turnover  ann_return_net  max_dd_net  deflated_sharpe
+model                                                                                                                                  
+LightGBM                     0.118  0.383       17.068         2.355       1.118     1.514           0.687      -0.479            0.000
+Transformer                  0.114  0.362       16.512         2.324       1.125     1.449           0.689      -0.567            0.000
+GRU                          0.113  0.358       16.205         2.056       0.852     1.456           0.409      -0.631            0.000
+Ridge                        0.111  0.337       15.448         1.102      -0.058     1.490          -0.253      -0.893            0.000
+Transformer-Q (q50/width)    0.106  0.350       15.643         2.309       0.830     1.684           0.378      -0.547            0.000
+LightGBM-Q (q50/width)       0.104  0.357       15.273         2.742       0.863     1.978           0.391      -0.448            0.000
+GRU-Q (q50/width)            0.101  0.335       14.453         2.042       0.524     1.708           0.139      -0.752            0.000
+Reversal24h                  0.024  0.095        4.037        -0.026      -2.853     3.068          -0.847      -1.000            0.000
+Random                      -0.006 -0.034       -1.348        -0.055      -4.227     3.224          -0.848      -1.000            0.000
+LightGBM-shuffled           -0.010 -0.048       -1.992        -0.584      -3.420     2.544          -0.836      -1.000            0.000
+Momentum7d                  -0.015 -0.055       -2.355         0.597      -0.436     1.233          -0.391      -0.950            0.000
+
+Equal-weight universe (long only, no costs): Sharpe -0.31, max drawdown -93.7%
+
+Per year / Yıllara göre:
+                  ic_mean                             sharpe_net                            
+year                 2022   2023   2024   2025   2026       2022   2023   2024   2025   2026
+model                                                                                       
+GRU                 0.140  0.106  0.110  0.106  0.098      1.095  0.309  0.827  1.055  1.161
+LightGBM            0.150  0.114  0.113  0.111  0.096      2.276  0.833  1.027  1.391 -0.451
+LightGBM-shuffled  -0.033  0.011  0.009 -0.009 -0.038     -2.643 -4.463 -3.404 -4.230 -2.084
+Momentum7d         -0.000 -0.033 -0.036 -0.022  0.031     -0.228 -0.027 -0.680 -1.568  0.966
+Random             -0.004 -0.010  0.001 -0.015 -0.002     -4.770 -3.479 -3.008 -5.552 -4.580
+Reversal24h         0.026  0.038  0.024  0.019  0.009     -2.005 -2.660 -2.484 -3.709 -3.753
+Ridge               0.140  0.113  0.099  0.101  0.093      0.627  0.304 -1.065  0.149 -0.241
+Transformer         0.143  0.118  0.107  0.100  0.096      1.822  0.947  0.979  0.898  1.197
+
+Quantile forecasts / Quantile tahminleri:
+               pinball_mean  coverage_80  median_width_80
+Transformer-Q       0.00942      0.80161          0.06106
+GRU-Q               0.00942      0.81212          0.06357
+LightGBM-Q          0.00943      0.80121          0.06237
+VolScaled-Q         0.00962      0.79278          0.06849
+
+Tables  -> D:\crypto-cross-sectional-forecasting\reports
+Figures -> D:\crypto-cross-sectional-forecasting\reports\figures
+Total time: 70.2 min

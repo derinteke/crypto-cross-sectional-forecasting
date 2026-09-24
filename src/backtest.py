@@ -64,6 +64,26 @@ def target_weights(
     raise ValueError(f"unknown mode {mode!r}")
 
 
+def smooth_signal(pred: pd.Series, halflife_days: float = config.SMOOTHING_HALFLIFE_DAYS) -> pd.Series:
+    """Exponentially average each coin's daily cross-sectional rank.
+
+    EN: The raw forecasts reshuffle the book every day (turnover ~1.5/day), and
+        at 15 bps a side that alone costs ~80% a year. Averaging the rank over a
+        few days keeps the ordering but moves it slowly. The average is causal
+        (pandas ewm only looks back) and the half-life is fixed in config before
+        looking at any test result, not tuned on it.
+    TR: Ham tahminler portföyü her gün yeniden karıyor (turnover günde ~1,5) ve
+        taraf başına 15 bps ile bu tek başına yılda ~%80'e mal oluyor. Sırayı
+        birkaç gün boyunca ortalamak sıralamayı koruyor ama onu yavaş
+        hareket ettiriyor. Ortalama nedensel (pandas ewm yalnızca geriye
+        bakıyor) ve yarı ömür, herhangi bir test sonucuna bakılmadan önce
+        config'de sabitlendi; test üzerinde ayarlanmadı.
+    """
+    wide = (pred.groupby(level="time").rank(pct=True) - 0.5).unstack("symbol")
+    smoothed = wide.ewm(halflife=halflife_days, ignore_na=True).mean().where(wide.notna())
+    return smoothed.stack().reindex(pred.index)
+
+
 def run_backtest(
     pred: pd.Series,
     log_returns: pd.Series,

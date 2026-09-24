@@ -1,0 +1,12 @@
+model,sharpe_net,tag,cost_bps
+LightGBM,1.1184117182535456,full,15.0
+Transformer,1.1251579977696236,full,15.0
+GRU,0.8516868854161315,full,15.0
+Ridge,-0.05770856051737462,full,15.0
+Transformer-Q (q50/width),0.8303115784845614,full,15.0
+LightGBM-Q (q50/width),0.86277550223436,full,15.0
+GRU-Q (q50/width),0.523644346522293,full,15.0
+Reversal24h,-2.8530255198312666,full,15.0
+Random,-4.227478107992891,full,15.0
+LightGBM-shuffled,-3.4196427434650714,full,15.0
+Momentum7d,-0.4356707125274637,full,15.0

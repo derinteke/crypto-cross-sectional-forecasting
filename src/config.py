@@ -129,6 +129,9 @@ QUANTILE_BUCKETS = 5          # long the top fifth, short the bottom fifth
 COST_BPS = 15.0               # per side: taker fee + slippage
 COST_GRID_BPS = (0.0, 10.0, 20.0, 30.0)
 PERIODS_PER_YEAR = 365        # crypto trades every day
+# EN: fixed before any test result was seen; see backtest.smooth_signal.
+# TR: herhangi bir test sonucu görülmeden önce sabitlendi; bkz. backtest.smooth_signal.
+SMOOTHING_HALFLIFE_DAYS = 3.0
 
 # --------------------------------------------------------------------------- #
 # Probabilistic forecasts / Olasılıksal tahminler

@@ -293,6 +293,19 @@ def test_long_short_book_is_dollar_neutral():
     assert w.abs().sum(axis=1).tolist() == pytest.approx([2.0, 2.0])
 
 
+def test_smoothing_is_causal():
+    """Changing tomorrow's prediction must not change today's smoothed signal."""
+    times = pd.date_range("2022-01-01", periods=6, freq="D")
+    idx = pd.MultiIndex.from_product([times, ["A", "B", "C"]], names=["time", "symbol"])
+    rng = np.random.default_rng(3)
+    pred = pd.Series(rng.standard_normal(len(idx)), index=idx)
+    base = B.smooth_signal(pred, 2.0)
+    bumped = pred.copy()
+    bumped.loc[times[-1]] = [9.0, -9.0, 0.0]
+    after = B.smooth_signal(bumped, 2.0)
+    pd.testing.assert_series_equal(base.loc[times[:-1]], after.loc[times[:-1]])
+
+
 def test_benchmark_is_equal_weight():
     pred, _ = _toy()
     w = B.target_weights(pred, "benchmark")

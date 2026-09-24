@@ -34,6 +34,7 @@ POINT_BASELINES = ["Random", "Momentum7d", "Reversal24h", "Ridge"]
 POINT_MODELS = ["LightGBM", "GRU", "Transformer"]
 QUANTILE_MODELS = ["VolScaled-Q", "LightGBM-Q", "GRU-Q", "Transformer-Q"]
 CONTROL_MODELS = ["LightGBM-shuffled"]
+NULL_CONTROLS = {"Random", "LightGBM-shuffled"}
 
 
 @dataclass
@@ -180,6 +181,8 @@ def score_point_models(res: WalkForwardResult, cost_bps: float = config.COST_BPS
     for name, q in res.quantiles.items():
         if name != "VolScaled-Q":
             signals[f"{name} (q50/width)"] = pd.Series(quantile_score(q), index=res.point.index)
+    for name in [m for m in POINT_MODELS if m in res.point.columns]:
+        signals[f"{name} (smoothed)"] = B.smooth_signal(res.point[name])
 
     for name, pred in signals.items():
         ic = M.daily_rank_ic(pred, y0)
@@ -194,15 +197,26 @@ def score_point_models(res: WalkForwardResult, cost_bps: float = config.COST_BPS
                    turnover=n["avg_turnover"])
         rows[name] = row
 
-    # EN: every strategy I evaluated counts as a trial, the controls included:
-    #     that is the honest number to deflate by.
-    # TR: değerlendirdiğim her strateji, kontroller dahil, bir deneme sayılıyor:
-    #     düzeltmede kullanılacak dürüst sayı bu.
-    trial_sr = [b["net"].mean() / b["net"].std() for b in books.values()]
+    # EN: every candidate strategy I evaluated counts as a trial. The two null
+    #     controls (random scores, shuffled-target model) are not candidates I
+    #     would ever pick; their cost-driven Sharpes of -3 to -4 would inflate
+    #     the spread of trial Sharpes and make the test meaninglessly harsh.
+    #     PSR is the same test with a single trial, for reference.
+    # TR: değerlendirdiğim her aday strateji bir deneme sayılıyor. İki sıfır
+    #     kontrolü (rastgele skorlar, karıştırılmış hedefli model) asla
+    #     seçeceğim adaylar değil; maliyetten gelen -3 ile -4 arası Sharpe'ları,
+    #     deneme Sharpe'larının yayılımını şişirip testi anlamsızca sertleştirirdi.
+    #     PSR, referans için aynı testin tek denemeli hâli.
+    market = B.run_backtest(res.point.iloc[:, 0], y0, "benchmark", 0.0)["gross"]
+    candidates = [n for n in books if n not in NULL_CONTROLS]
+    trial_sr = [books[n]["net"].mean() / books[n]["net"].std() for n in candidates]
     for name, bt in books.items():
+        rows[name]["psr"] = M.deflated_sharpe_ratio(bt["net"], [])["deflated_sharpe"]
         rows[name]["deflated_sharpe"] = M.deflated_sharpe_ratio(bt["net"], trial_sr)["deflated_sharpe"]
+        rows[name].update(M.market_regression(bt["gross"], market))
     table = pd.DataFrame(rows).T
     table.index.name = "model"
+    table.attrs["n_trials"] = len(candidates)
     return table.sort_values("ic_mean", ascending=False), books
 
 

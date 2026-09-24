@@ -19,6 +19,7 @@ Usage / Kullanım:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -55,6 +56,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--epochs", type=int, default=config.EPOCHS)
     p.add_argument("--cost-bps", type=float, default=config.COST_BPS)
     p.add_argument("--tag", default="")
+    p.add_argument("--rescore", action="store_true",
+                   help="Skip training: re-score the saved predictions of --tag.")
     return p.parse_args()
 
 
@@ -80,6 +83,9 @@ def main() -> None:
     epochs = config.SMOKE_EPOCHS if args.smoke else args.epochs
     set_seed(config.SEED)
     t_start = time.time()
+    if args.rescore:
+        report(load_result(tag), args, tag, t_start)
+        return
 
     print("=" * 78 + "\nDEVICE / CİHAZ\n" + "=" * 78)
     device = get_device()
@@ -121,10 +127,50 @@ def main() -> None:
         print("\n" + "=" * 78 + "\nMODELS / MODELLER\n" + "=" * 78)
         res = combine(res, W.run_walk_forward(samples, folds, models, device, epochs=epochs))
 
+    save_result(res, tag)
+    # EN: the trial log only grows when something was actually trained.
+    # TR: deneme kaydı yalnızca gerçekten bir şey eğitildiğinde büyüyor.
+    table, _ = W.score_point_models(res, args.cost_bps)
+    trials = table[["sharpe_net"]].assign(tag=tag, cost_bps=args.cost_bps)
+    trials_path = config.REPORTS_DIR / "trials.csv"
+    trials.to_csv(trials_path, mode="a", header=not trials_path.exists())
+    report(res, args, tag, t_start)
+
+
+def save_result(res: W.WalkForwardResult, tag: str) -> None:
+    config.PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    res.point.join(res.targets).to_parquet(config.PROCESSED_DIR / f"predictions_{tag}.parquet")
+    np.savez(config.PROCESSED_DIR / f"quantiles_{tag}.npz", **res.quantiles)
+    hist = {f"{m}|{fold}": h for (m, fold), h in res.histories.items()}
+    (config.PROCESSED_DIR / f"histories_{tag}.json").write_text(json.dumps(hist))
+    config.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(res.fold_log).to_csv(config.REPORTS_DIR / f"folds_{tag}.csv", index=False)
+
+
+def load_result(tag: str) -> W.WalkForwardResult:
+    df = pd.read_parquet(config.PROCESSED_DIR / f"predictions_{tag}.parquet")
+    target_cols = [c for c in df.columns if c.startswith("y_day")] + ["y_demeaned"]
+    with np.load(config.PROCESSED_DIR / f"quantiles_{tag}.npz") as z:
+        quantiles = {k: z[k] for k in z.files}
+    histories = {}
+    hist_path = config.PROCESSED_DIR / f"histories_{tag}.json"
+    if hist_path.exists():
+        for key, h in json.loads(hist_path.read_text()).items():
+            m, fold = key.split("|")
+            histories[(m, int(fold))] = h
+    return W.WalkForwardResult(point=df.drop(columns=target_cols), quantiles=quantiles,
+                               targets=df[target_cols], histories=histories)
+
+
+def report(res: W.WalkForwardResult, args, tag: str, t_start: float) -> None:
+    """Score, print, save tables and draw every figure for one result."""
     print("\n" + "=" * 78 + "\nRESULTS / SONUÇLAR  (out of sample, stitched folds)\n" + "=" * 78)
     table, books = W.score_point_models(res, args.cost_bps)
-    show = cols + ["ann_return_net", "max_dd_net", "deflated_sharpe"]
+    cols = ["ic_mean", "icir", "ic_tstat_nw", "sharpe_gross", "sharpe_net", "turnover"]
+    show = cols + ["ann_return_net", "max_dd_net", "beta_to_market", "alpha_bps_per_day",
+                   "alpha_tstat", "psr", "deflated_sharpe"]
     print(table[show].to_string(float_format=lambda v: f"{v:.3f}"))
+    print(f"(deflated Sharpe treats {table.attrs['n_trials']} candidate strategies as trials)")
 
     benchmark = B.run_backtest(res.point.iloc[:, 0], res.targets["y_day0"], "benchmark", 0.0)["gross"]
     print(f"\nEqual-weight universe (long only, no costs): Sharpe {M.sharpe(benchmark):.2f}, "
@@ -146,13 +192,6 @@ def main() -> None:
     years.to_csv(config.REPORTS_DIR / f"results_by_year_{tag}.csv")
     if qtable is not None:
         qtable.to_csv(config.REPORTS_DIR / f"results_quantile_{tag}.csv")
-    trials = table[["sharpe_net"]].assign(tag=tag, cost_bps=args.cost_bps)
-    trials_path = config.REPORTS_DIR / "trials.csv"
-    trials.to_csv(trials_path, mode="a", header=not trials_path.exists())
-    config.PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    res.point.join(res.targets).to_parquet(config.PROCESSED_DIR / f"predictions_{tag}.parquet")
-    np.savez(config.PROCESSED_DIR / f"quantiles_{tag}.npz", **res.quantiles)
-    pd.DataFrame(res.fold_log).to_csv(config.REPORTS_DIR / f"folds_{tag}.csv", index=False)
 
     # ---- figures ---------------------------------------------------------- #
     headline = [m for m in ["LightGBM", "GRU", "Transformer", "Ridge", "Momentum7d",
@@ -165,9 +204,16 @@ def main() -> None:
     E.plot_quintiles({m: B.quintile_returns(res.point[m], res.targets["y_day0"]) for m in headline},
                      filename=f"quintiles_{tag}.png")
     E.plot_ic_decay(table, headline, filename=f"ic_decay_{tag}.png")
-    E.plot_cost_sensitivity({m: B.cost_sensitivity(res.point[m], res.targets["y_day0"])
-                             for m in headline if m != "Random"},
-                            filename=f"cost_sensitivity_{tag}.png")
+    smoothed = [f"{m} (smoothed)" for m in W.POINT_MODELS if f"{m} (smoothed)" in books]
+    E.plot_equity_curves(books, [m for m in W.POINT_MODELS if m in books] + smoothed, benchmark,
+                         title="Raw vs smoothed signal, net of costs",
+                         filename=f"equity_smoothed_{tag}.png")
+    curves = {m: B.cost_sensitivity(res.point[m], res.targets["y_day0"])
+              for m in headline if m != "Random"}
+    for m in [m for m in W.POINT_MODELS if m in res.point.columns]:
+        curves[f"{m} (smoothed)"] = B.cost_sensitivity(B.smooth_signal(res.point[m]),
+                                                       res.targets["y_day0"])
+    E.plot_cost_sensitivity(curves, filename=f"cost_sensitivity_{tag}.png")
     if res.quantiles:
         E.plot_calibration(calib, filename=f"calibration_{tag}.png")
     for name in {m for (m, _) in res.histories}:
