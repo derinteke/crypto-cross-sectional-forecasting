@@ -145,7 +145,7 @@ class TransformerForecaster(nn.Module):
             d_model=d_model, nhead=n_heads, dim_feedforward=4 * d_model,
             dropout=dropout, batch_first=True, norm_first=True,
         )
-        self.encoder = nn.TransformerEncoder(layer, num_layers=n_layers)
+        self.encoder = nn.TransformerEncoder(layer, num_layers=n_layers, enable_nested_tensor=False)
         self.norm = nn.LayerNorm(d_model)
         self.head = _Head(d_model, n_static, n_outputs, dropout)
 

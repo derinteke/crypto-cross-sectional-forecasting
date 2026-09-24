@@ -16,6 +16,7 @@ TR: Kripto backtest'lerinin çoğu, kimse fark etmeden, evrende sızıntı yapı
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from src import config
@@ -29,6 +30,7 @@ def select_universe(
     lookback_days: int = config.UNIVERSE_LOOKBACK_DAYS,
     min_history_days: int = config.MIN_HISTORY_DAYS,
     min_coverage: float = config.MIN_COVERAGE,
+    stable_max_vol: float = config.STABLE_MAX_DAILY_VOL,
 ) -> list[str]:
     """Top `size` symbols by mean USDT volume over the days before `month_start`.
 
@@ -45,13 +47,21 @@ def select_universe(
         return []
     volume = daily.fields["quote_volume"].loc[window].fillna(0.0)
 
-    history = daily.traded.loc[:month_start]
-    first_seen = history.idxmax().where(history.any())
-    old_enough = first_seen <= month_start - pd.Timedelta(days=min_history_days)
+    # EN: "old enough" means continuously traded over the last
+    #     `min_history_days`, not merely "first seen long ago": a coin relaunched
+    #     under an old ticker (LUNA 2.0) must earn its history again.
+    # TR: "yeterince eski", yalnızca "uzun zaman önce görülmüş" değil, son
+    #     `min_history_days` boyunca kesintisiz işlem görmüş demek: eski bir
+    #     sembolle yeniden çıkarılan bir coin (LUNA 2.0) geçmişini yeniden
+    #     kazanmak zorunda.
+    history = daily.traded.loc[month_start - pd.Timedelta(days=min_history_days - 1):month_start]
+    old_enough = (len(history) >= min_history_days) & (history.mean() >= min_coverage)
     covered = traded.mean() >= min_coverage
     alive = traded.iloc[-1]
+    daily_vol = np.log(daily.close.loc[window]).diff().std()
+    not_pegged = daily_vol > stable_max_vol
 
-    eligible = old_enough & covered & alive
+    eligible = old_enough & covered & alive & not_pegged
     ranked = volume.mean()[eligible].sort_values(ascending=False)
     return list(ranked.index[:size])
 

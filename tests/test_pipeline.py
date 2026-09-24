@@ -149,6 +149,34 @@ def test_a_delisted_coin_is_never_bought_after_it_stops_trading(samples):
     assert dead.max() + pd.Timedelta(hours=config.EXECUTION_LAG_HOURS) < DELIST_AT
 
 
+def test_no_feature_spans_a_token_swap(hourly, universe):
+    """A multi-day halt followed by a 1000x price jump (a redenomination).
+
+    EN: After the gap the ticker is effectively a new asset. No sample may be
+        built until a full warm-up has passed, so no return feature can mix the
+        old price with the new one.
+    TR: Boşluktan sonra sembol fiilen yeni bir varlık. Tam bir ısınma süresi
+        geçene kadar hiçbir örnek kurulmamalı; böylece hiçbir getiri özelliği
+        eski fiyatla yenisini karıştıramaz.
+    """
+    gap_start = START + pd.Timedelta(days=60)
+    gap_end = gap_start + pd.Timedelta(days=5)
+    fields = {k: v.copy() for k, v in hourly.fields.items()}
+    traded = hourly.traded.copy()
+    traded.loc[gap_start:gap_end, "CCCUSDT"] = False
+    for f in ("open", "high", "low", "close"):
+        fields[f].loc[gap_end:, "CCCUSDT"] *= 1000.0
+    for f in fields:
+        fields[f] = fields[f].where(traded)
+    swapped = build_samples(Panel(fields, traded), universe, start="2021-02-01")
+
+    ccc = swapped.frame.xs("CCCUSDT", level="symbol")
+    warmup = pd.Timedelta(hours=config.FEATURE_WARMUP_HOURS)
+    assert not ((ccc.index > gap_start) & (ccc.index < gap_end + warmup)).any()
+    assert (ccc.index >= gap_end + warmup).any(), "the coin must come back eventually"
+    assert ccc["ret_720h"].abs().max() < 3.0
+
+
 def test_rank_features_are_centred_within_each_day(samples):
     ranks = samples.frame["rank_ret_24h"]
     assert ranks.between(-0.5, 0.5).all()
@@ -174,6 +202,16 @@ def test_universe_needs_history(daily):
     """A coin younger than MIN_HISTORY_DAYS cannot enter."""
     month = pd.Timestamp("2021-02-01")  # the data only starts in January
     assert select_universe(daily, month, size=5, min_history_days=60) == []
+
+
+def test_pegged_coins_are_kept_out_of_the_universe(daily):
+    """A coin stuck at 1.00 is a stablecoin whatever its name."""
+    fields = {k: v.copy() for k, v in daily.fields.items()}
+    fields["close"]["CCCUSDT"] = 1.0 + 0.0001 * np.sin(np.arange(len(fields["close"])))
+    fields["quote_volume"]["CCCUSDT"] = 1e12  # the most liquid coin by far
+    uni = select_universe(Panel(fields, daily.traded), pd.Timestamp("2021-04-01"),
+                          size=6, min_history_days=30)
+    assert "CCCUSDT" not in uni and len(uni) > 0
 
 
 def test_delisted_coin_is_in_the_universe_until_it_dies(daily):

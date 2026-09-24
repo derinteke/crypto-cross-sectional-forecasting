@@ -185,13 +185,15 @@ def build_samples(
 
     EN: A (t, coin) pair becomes a sample only if: the coin is in that month's
         universe, it traded in every one of the last `seq_lookback` hours (so no
-        window is built on missing data), and its entry bar at t+1 really
-        traded. The same sample set is used by every model, so every comparison
+        window is built on missing data), it had no multi-day halt within the
+        30-day feature warm-up (so no feature spans a token swap), and its entry
+        bar at t+1 really traded. The same sample set is used by every model, so every comparison
         is on identical rows.
     TR: Bir (t, coin) çifti yalnızca şu koşullarda örnek oluyor: coin o ayın
         evreninde, son `seq_lookback` saatin her birinde işlem görmüş (böylece
-        hiçbir pencere eksik veri üzerine kurulmuyor) ve t+1'deki giriş barı
-        gerçekten işlem görmüş. Aynı örnek kümesi her model tarafından
+        hiçbir pencere eksik veri üzerine kurulmuyor), 30 günlük özellik ısınma
+        süresi içinde çok günlü bir durdurma yaşamamış (böylece hiçbir özellik
+        bir token swap'ını aşmıyor) ve t+1'deki giriş barı gerçekten işlem görmüş. Aynı örnek kümesi her model tarafından
         kullanılıyor; dolayısıyla her karşılaştırma birebir aynı satırlar
         üzerinde.
     """
@@ -209,7 +211,14 @@ def build_samples(
     members = membership(universe, hours, panel.symbols)
     full_window = panel.traded.rolling(seq_lookback, min_periods=seq_lookback).sum() == seq_lookback
 
-    valid = members & full_window & panel.traded & tgt["entry_traded"]
+    # EN: no long halt (a swap / relaunch) anywhere in the feature warm-up.
+    # TR: özellik ısınma süresinin hiçbir yerinde uzun bir durdurma (swap /
+    #     yeniden çıkış) yok.
+    long_gap = panel.traded.rolling(config.LONG_GAP_HOURS).sum() == 0
+    recent_gap = long_gap.rolling(config.FEATURE_WARMUP_HOURS + config.LONG_GAP_HOURS,
+                                  min_periods=1).max().astype(bool)
+
+    valid = members & full_window & ~recent_gap & panel.traded & tgt["entry_traded"]
     valid = valid.loc[decision_times]
 
     def stack(df: pd.DataFrame) -> pd.Series:

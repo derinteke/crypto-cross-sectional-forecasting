@@ -46,7 +46,7 @@ EXCLUDED_BASES = frozenset(
         "USDC", "BUSD", "TUSD", "USDP", "PAX", "DAI", "FDUSD", "UST", "USTC",
         "USDS", "USDSB", "SUSD", "EUR", "GBP", "AUD", "TRY", "BRL", "RUB",
         "UAH", "NGN", "ZAR", "BIDR", "IDRT", "BKRW", "BVND", "PAXG", "EURI",
-        "AEUR", "XUSD", "USD1", "BFUSD", "RLUSD", "USDE", "PYUSD", "XAUT",
+        "AEUR", "XUSD", "USD1", "BFUSD", "RLUSD", "USDE", "PYUSD", "XAUT", "U",
         # EN: wrapped / staked copies of BTC, ETH, SOL: same asset, same return.
         # TR: BTC, ETH, SOL'ün sarmalanmış / stake edilmiş kopyaları: aynı varlık.
         "WBTC", "WBETH", "BETH", "BNSOL",
@@ -85,6 +85,12 @@ UNIVERSE_SIZE = 30
 UNIVERSE_LOOKBACK_DAYS = 30   # volume ranking window / hacim sıralama penceresi
 MIN_HISTORY_DAYS = 60         # a coin must be this old to enter / en az bu yaşta
 MIN_COVERAGE = 0.95           # share of days with data in the window
+# EN: data-driven stablecoin guard: a coin whose daily returns barely move is
+#     pegged to something, whatever its name. Catches stables I did not list.
+# TR: veriye dayalı stablecoin koruması: günlük getirileri neredeyse hiç
+#     oynamayan bir coin, adı ne olursa olsun bir şeye sabitlenmiştir.
+#     Listelemediğim stablecoin'leri de yakalıyor.
+STABLE_MAX_DAILY_VOL = 0.005
 
 # --------------------------------------------------------------------------- #
 # Task / Görev
@@ -94,6 +100,18 @@ EXECUTION_LAG_HOURS = 1   # ...and can only trade one hour later
 HORIZON_HOURS = 24        # holding period / elde tutma süresi
 SEQ_LOOKBACK_HOURS = 120  # 5 days of hourly history for the sequence models
 IC_DECAY_DAYS = 5         # how many days ahead I check signal decay
+FEATURE_WARMUP_HOURS = 720  # the longest feature window (30 days)
+
+# EN: A trading halt this long means the coin was swapped, redenominated or
+#     relaunched under the same ticker (LUNA -> LUNA 2.0, SUN, BNX, STRAX).
+#     The price after the gap is not the same asset as before it, so no feature
+#     may look across it. Samples resume once a full warm-up has passed.
+# TR: Bu kadar uzun bir işlem durdurma, coinin swap edildiği, redenominasyona
+#     uğradığı ya da aynı sembolle yeniden çıkarıldığı anlamına geliyor (LUNA ->
+#     LUNA 2.0, SUN, BNX, STRAX). Boşluktan sonraki fiyat, öncekiyle aynı varlık
+#     değil; dolayısıyla hiçbir özellik onun öbür tarafına bakamaz. Örnekler tam
+#     bir ısınma süresi geçtikten sonra yeniden başlıyor.
+LONG_GAP_HOURS = 72
 
 # --------------------------------------------------------------------------- #
 # Walk-forward / İleriye doğru yürüyen doğrulama
