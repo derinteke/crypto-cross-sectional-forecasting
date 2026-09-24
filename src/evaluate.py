@@ -18,9 +18,6 @@ TR: Her grafik bir inceleyicinin soracağı tek bir soruya cevap veriyor:
 
 from __future__ import annotations
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
