@@ -1,0 +1,33 @@
+# Crypto cross-sectional forecasting - Python 3.10
+#
+# EN: PyTorch must be installed FIRST and from its own index (the CUDA build is
+#     not on PyPI). I use cu126 on purpose: my GPU is a GTX 1050 Ti (Pascal,
+#     sm_61) and the newer cu128 wheels no longer compile for Pascal.
+# TR: PyTorch ÖNCE ve kendi index'inden kurulmalı (CUDA derlemesi PyPI'da yok).
+#     cu126'yı bilerek kullanıyorum: GPU'm GTX 1050 Ti (Pascal, sm_61) ve yeni
+#     cu128 wheel'leri artık Pascal için derlenmiyor.
+#
+#   pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu126
+#   pip install -r requirements.txt
+#
+# CPU only / Yalnızca CPU:  pip install torch==2.7.1
+
+torch==2.7.1
+
+numpy==2.2.6
+pandas==2.3.3
+pyarrow==25.0.1
+scipy==1.15.3
+scikit-learn==1.7.2
+lightgbm==4.7.0
+statsmodels==0.15.0
+requests==2.34.2
+
+matplotlib==3.10.9
+seaborn==0.13.2
+tqdm==4.70.1
+
+pytest==9.1.1
+jupyter==1.1.1
+ipykernel==7.3.0
+nbconvert==7.17.1

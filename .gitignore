@@ -1,0 +1,11 @@
+# data is downloaded by scripts/download_data.py / veri script ile indiriliyor
+data/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+reports/*.json
+reports/*_smoke*
+reports/figures/*_smoke*
+*.part
